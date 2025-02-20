@@ -86,13 +86,6 @@ Execute the following command to run the K-Means clustering implementation:
 ```sh
 python kmeans_clustering.py
 ```
-
-## Motivation
-K-Means is widely used in data science and machine learning for clustering analysis. This project was developed to:
-- Provide a deeper understanding of how K-Means operates through a custom implementation.
-- Offer a visual representation of the clustering process step-by-step.
-- Help learners and practitioners analyze clustering principles interactively.
-
 ## Acknowledgments
 This project was inspired by the article ["Create Your Own K-Means Clustering Algorithm in Python"](https://towardsdatascience.com/create-your-own-k-means-clustering-algorithm-in-python-d7d4c9077670) from Towards Data Science. Enhancements were made to include features like reproducibility, handling of empty clusters, and iteration-based visualization.
 
