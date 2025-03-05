@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
+from sklearn.metrics import silhouette_score
 import random
 random_seed=42
 
@@ -64,16 +65,13 @@ class KMeans:
             self.centroids = new_centroids
 
     def plot_iteration(self, data, iteration, final=False):
-        colors = ["red", "blue", "green", "purple"]
+        # use a colormap so it works for any number of clusters
+        cmap = plt.cm.get_cmap('tab10', self.k)
         plt.figure(figsize=(8, 6))
-
-
 
         for i, cluster in enumerate(self.clusters):
             if len(cluster) > 0:
-                plt.scatter(cluster[:, 0], cluster[:, 1], color=colors[i], label=f"Cluster {i + 1}")
-
-
+                plt.scatter(cluster[:, 0], cluster[:, 1], color=cmap(i), label=f"Cluster {i + 1}")
 
         plt.scatter(self.centroids[:, 0], self.centroids[:, 1], color="black", marker="x", s=200, label="Centroids")
 
@@ -97,13 +95,21 @@ class KMeans:
     def get_clusters(self):
         return self.clusters
 
+    def get_inertia(self):
+        # inertia = sum of squared distances of each point to its centroid
+        total = 0
+        for i, cluster in enumerate(self.clusters):
+            if len(cluster) > 0:
+                for point in cluster:
+                    total += euclidean_distance(point, self.centroids[i]) ** 2
+        return total
 
 
+# generate synthetic dataset
 data, true_labels = make_blobs(n_samples=300, centers=4, cluster_std=1.0, random_state=42)
 
 
-
-
+# plot the initial dataset
 plt.figure(figsize=(8, 6))
 plt.scatter(data[:, 0], data[:, 1], color="gray", label="Data Points", alpha=0.5)
 plt.title("Initial Dataset")
@@ -113,25 +119,86 @@ plt.legend()
 plt.show()
 
 
+# ============================================
+# Elbow Method - find the best k
+# ============================================
+print("=" * 40)
+print("Elbow Method - Testing k from 2 to 8")
+print("=" * 40)
+
+inertia_values = []
+k_range = range(2, 9)
+
+for k in k_range:
+    km = KMeans(k=k)
+    km.fit(data, plot_progress=False)
+    inertia = km.get_inertia()
+    inertia_values.append(inertia)
+    print(f"k={k}, Inertia={inertia:.2f}")
+
+# plot the elbow
+plt.figure(figsize=(8, 6))
+plt.plot(list(k_range), inertia_values, 'bo-')
+plt.title("Elbow Method")
+plt.xlabel("Number of Clusters (k)")
+plt.ylabel("Inertia (Sum of Squared Distances)")
+plt.xticks(list(k_range))
+plt.show()
+print()
 
 
-kmeans = KMeans(k=4)
+# ============================================
+# Silhouette Score - another way to evaluate
+# ============================================
+print("=" * 40)
+print("Silhouette Scores for different k values")
+print("=" * 40)
+
+silhouette_values = []
+
+for k in k_range:
+    km = KMeans(k=k)
+    km.fit(data, plot_progress=False)
+    labels = km.predict(data)
+    score = silhouette_score(data, labels)
+    silhouette_values.append(score)
+    print(f"k={k}, Silhouette Score={score:.4f}")
+
+# plot silhouette scores
+plt.figure(figsize=(8, 6))
+plt.plot(list(k_range), silhouette_values, 'ro-')
+plt.title("Silhouette Score for Different k")
+plt.xlabel("Number of Clusters (k)")
+plt.ylabel("Silhouette Score")
+plt.xticks(list(k_range))
+plt.show()
+
+best_k = list(k_range)[np.argmax(silhouette_values)]
+print(f"\nBest k based on silhouette score: {best_k}")
+print()
 
 
+# ============================================
+# Run K-Means with the best k (k=4 in this case)
+# ============================================
+print("=" * 40)
+print(f"Running K-Means with k={best_k}")
+print("=" * 40)
+
+kmeans = KMeans(k=best_k)
 kmeans.fit(data, plot_progress=True)
-
 
 centroids = kmeans.get_centroids()
 clusters = kmeans.get_clusters()
 
 
-
-def plot_final_clusters(data, centroids, clusters):
-    colors = ["red", "blue", "green", "purple"]
+# plot the final result
+def plot_final_clusters(data, centroids, clusters, k):
+    cmap = plt.cm.get_cmap('tab10', k)
     plt.figure(figsize=(8, 6))
     for i, cluster in enumerate(clusters):
         if len(cluster) > 0:
-            plt.scatter(cluster[:, 0], cluster[:, 1], color=colors[i], label=f"Cluster {i + 1}")
+            plt.scatter(cluster[:, 0], cluster[:, 1], color=cmap(i), label=f"Cluster {i + 1}")
     plt.scatter(centroids[:, 0], centroids[:, 1], color="black", marker="x", s=200, label="Centroids")
     plt.title("Final Clusters")
     plt.xlabel("Feature 1")
@@ -139,31 +206,13 @@ def plot_final_clusters(data, centroids, clusters):
     plt.legend()
     plt.show()
 
-plot_final_clusters(data, centroids, clusters)
+plot_final_clusters(data, centroids, clusters, best_k)
 
-
-
-
-
-def plot_specific_iteration(kmeans, iteration):
-    """
-    Plot the state of clusters and centroids at a specific iteration.
-    """
-    clusters = kmeans.clusters
-    centroids = kmeans.centroids
-
-    colors = ["red", "blue", "green", "purple"]
-    plt.figure(figsize=(8, 6))
-    for i, cluster in enumerate(clusters):
-        if len(cluster) > 0:
-            plt.scatter(cluster[:, 0], cluster[:, 1], color=colors[i], label=f"Cluster {i + 1}")
-    plt.scatter(centroids[:, 0], centroids[:, 1], color="black", marker="x", s=200, label="Centroids")
-    plt.title(f"K-Means Iteration {iteration}")
-    plt.xlabel("Feature 1")
-    plt.ylabel("Feature 2")
-    plt.legend()
-    plt.show()
-
-
-specific_iteration = 3
-plot_specific_iteration(kmeans, specific_iteration)
+# print final evaluation
+final_labels = kmeans.predict(data)
+final_silhouette = silhouette_score(data, final_labels)
+final_inertia = kmeans.get_inertia()
+print(f"\nFinal Results:")
+print(f"  Inertia: {final_inertia:.2f}")
+print(f"  Silhouette Score: {final_silhouette:.4f}")
+print(f"  Number of iterations until convergence: check output above")
