@@ -10,7 +10,7 @@ This project implements the K-Means algorithm itself with NumPy only (scikit-lea
 - **Elbow Method** to determine the optimal number of clusters
 - **Silhouette Score** evaluation for clustering quality
 - **Step-by-step visualization** of the clustering process at each iteration
-- **Convergence detection** — stops automatically when centroids stabilize, or after `max_iterations` (default 100)
+- **Convergence detection** - stops automatically when centroids stabilize, or after `max_iterations` (default 100)
 
 ## How It Works
 
@@ -28,7 +28,7 @@ This project implements the K-Means algorithm itself with NumPy only (scikit-lea
 
 ## Dataset
 
-Uses synthetic data generated with `sklearn.datasets.make_blobs` — 300 points distributed across 4 cluster centers (`random_state=42`).
+Uses synthetic data generated with `sklearn.datasets.make_blobs` - 300 points distributed across 4 cluster centers (`random_state=42`).
 
 ## Results
 
@@ -87,7 +87,7 @@ kmeans-clustering-python/
 - scikit-learn (dataset generation, silhouette score)
 
 ## Key Takeaways
-- Random centroid initialization can significantly affect results — fixed seeds ensure reproducibility
+- Random centroid initialization can significantly affect results - fixed seeds ensure reproducibility
 - The Elbow Method provides visual guidance but isn't always clear-cut; Silhouette Score offers a numerical alternative
 - K-Means performs well on spherical, similarly-sized clusters but struggles with irregular shapes
 
